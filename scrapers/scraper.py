@@ -1,11 +1,18 @@
 from bs4 import BeautifulSoup
-from selenium import webdriver
+import pandas as pd
 import requests
+import ctime
+import re
 
 class Scraper(object):
 
     def __init__(self, webdriver='chrome'):
         self.webdriver = webdriver
+
+    
+    def convert_to_csv(filename, dict):
+        df = pd.Dataframe.from_dict(dict, orient='index')
+        return df.to_csv(filename + '{}', str(time.ctime()))
 
 class AutismSpeaksScraper(Scraper):
     
@@ -18,6 +25,7 @@ class AutismSpeaksScraper(Scraper):
           "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"]
     
     """
+<<<<<<< HEAD
     Process resources for each page 
     """
     def process_state_page(self):
@@ -42,3 +50,22 @@ if __name__ == '__main__':
     x = AutismSpeaksScraper()
     bs4_dict = x.process_state_page()
     print(bs4_dict)
+=======
+    Converts Resource links to python dictionary of resource links
+    """
+    def process_state_page(self):
+        resource_dict = {}
+        for state in self.state_list:
+            soup = BeautifulSoup(requests.get(self.site_url + state).content)
+            for item in soup.find_all('a'):
+                    
+                
+                
+            
+
+
+if __name__ == '__main__':
+    x = AutismSpeaksScraper("", "")
+    x.process_state_page()
+            
+>>>>>>> 7aeb3993ade06aa8f030cbfdbb9ac40bd5279440
