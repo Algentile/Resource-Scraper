@@ -21,6 +21,7 @@ Webscraper for autism speaks website
 class AutismSpeaksScraper(Scraper):
 
     def __init__(self):
+        self.base_url = 'https://www.autismspeaks.org'
         self.site_url = 'https://www.autismspeaks.org/resource-guide/state/'
         self.state_list = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA",
                            "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
@@ -51,9 +52,40 @@ class AutismSpeaksScraper(Scraper):
             if(tag.name == 'ul'):
                 for li_tag in tag.findAll('li'):
                     li_tag_content = li_tag.find('a').get('href')
-                    href_dict[content_block].append(li_tag_content)
+                    self.get_location_info(li_tag_content)
         return href_dict
     
+    """
+    Grab the location links from the view taxonomy block
+    endpoint (str): Endpoint url for veiw taxonomy block by-state info
+    """
+    def _process_organization_info(self, url):
+        organization_list = []
+        soup = BeautifulSoup(requests.get(url).content)
+        view_taxonomy_block = soup.find('div', class_='view-taxonomy-listing-by-state')
+
+        for tr in view_taxonomy_block.findAll('tr'):
+            location_endpoint = tr.find('a').get('href')
+            city = tr.find('td', class_='views-field-city') 
+            if(city != None and location_endpoint != None):
+                organization_list.append((location_endpoint, city.contents[0].strip('\n')))
+        return organization_list
+    
+    """
+    TODO: Get Location Data Block
+    """
+    def get_location_info(self, endpoint):
+        location_url = self.base_url + endpoint
+        organization_list = self._process_organization_info(location_url)
+        for (endpoint, city) in organization_list:
+            print(self.base_url + endpoint)
+            soup = BeautifulSoup(requests.get(self.base_url + endpoint))
+            location_block = soup.find('div', class_='node-content')
+            print(location_block)
+
+    """
+    Test function for processing single state
+    """
     def process_test_page(self):
         return self._process_state_page('AL')
     
@@ -74,5 +106,4 @@ class AutismSpeaksScraper(Scraper):
 if __name__ == '__main__':
     x = AutismSpeaksScraper()
     href_dict = x.process_test_page()
-    print(href_dict)
     
